@@ -1,0 +1,52 @@
+{
+  "sucess": true,
+  "total_fields": 9,
+  "timestamp": "2025-12-08T18:19:05.409878",
+  "fields": {
+    "current_place": {
+      "text": "Hải Tân, Thành phố Hai Dương, Hải Dương",
+      "detection_confidence": 0.6977,
+      "ocr_confidence": 0.9158
+    },
+    "dob": {
+      "text": "24/02/2004",
+      "detection_confidence": 0.8086,
+      "ocr_confidence": 0.9355
+    },
+    "expire_date": {
+      "text": "24/02/2029",
+      "detection_confidence": 0.907,
+      "ocr_confidence": 0.935
+    },
+    "gender": {
+      "text": "Nam",
+      "detection_confidence": 0.7324,
+      "ocr_confidence": 0.9309
+    },
+    "id": {
+      "text": "030204002760",
+      "detection_confidence": 0.8423,
+      "ocr_confidence": 0.9221
+    },
+    "name": {
+      "text": "PHẠM MINH TÙ",
+      "detection_confidence": 0.7793,
+      "ocr_confidence": 0.8696
+    },
+    "nationality": {
+      "text": "Viện Nam",
+      "detection_confidence": 0.8261,
+      "ocr_confidence": 0.8554
+    },
+    "origin_place": {
+      "text": "Lam Sơn, Thanh Miên Hải Dương",
+      "detection_confidence": 0.7135,
+      "ocr_confidence": 0.9272
+    }
+  },
+  "pipeline_info": {
+    "preprocessing_applied": true,
+    "attempt_number": 1,
+    "card_confidence": 0.9166
+  }
+}
