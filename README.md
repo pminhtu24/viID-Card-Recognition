@@ -69,7 +69,7 @@ Output directory will be display in resulst/
   "timestamp": "2025-12-08T18:19:05.409878",
   "fields": {
     "current_place": {
-      "text": "Hải Tân, Thành phố Hai Dương, Hải Dương",
+      "text": "Hải Tân, Thành phố Hải Dương, Hải Dương",
       "detection_confidence": 0.6977,
       "ocr_confidence": 0.9158
     },
