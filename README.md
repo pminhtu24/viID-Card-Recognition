@@ -4,8 +4,8 @@ The system handles card detection, field localization, image alignment, enhancem
 ---
 
 ## Visualize how it works
-[!alt text](./assets/Alignment_preprocess.png)
-[!alt text](./assets/Field_detector.png)
+![alt text](./assets/Alignment_preprocess.png)
+![alt text](./assets/Field_detector.png)
 
 ---
 
