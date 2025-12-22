@@ -1,7 +1,7 @@
 # Vietnamese ID CARD Recognition
 A lightweight computer-vision pipeline for detecting Vietnamese ID cards and extracting key fields such as ID number, name, date of birth, and more. 
 The system handles card detection, field localization, image alignment, enhancement, and OCR using VietOCR. Turn raw ID card photos into clean, structured, machine-readable data.
----
+
 
 ## Visualize how it works
 ![alt text](./assets/Alignment_preprocess.png)
