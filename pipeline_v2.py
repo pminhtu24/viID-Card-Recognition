@@ -10,7 +10,8 @@ class IDCardPipeline:
                  field_model_path = "model/Text_field_detect_best_03_12_25.pt",
                  card_conf: float = 0.5,
                  field_conf: float =0.4,
-                 min_fields_required = 7
+                 min_fields_required = 7,
+                 custom_ocr_weights = "./model/vgg_transformer_ocr_cccd_v3.pth"
                  ):
         self.min_fields_required = min_fields_required
         self.card_detector = CardDetector(
@@ -21,12 +22,14 @@ class IDCardPipeline:
         self.field_detector = FieldDetectorOCR(
             model_path=field_model_path,
             conf_threshold=field_conf,
-            ocr_model='vgg_transformer'
+            ocr_model='vgg_transformer',
+            custom_ocr_weights=custom_ocr_weights,
         )
         self.preprocessor = CardPreprocessor(
             resize_ratio=0.5,
             enable_perspective=True,
-            enable_enhance=True
+            enable_enhance=True,
+            fixed_output_size=(800,500)
         )
     
     def process_image(self, image_path, output_dir='results', save_debug=True):
@@ -40,7 +43,7 @@ class IDCardPipeline:
         #-------------Detect and Crop Card----------------
         card_result = self.card_detector.detect_from_path(
             image_path=image_path,
-            padding_percent=0.2
+            padding_percent=0.25
         )
 
         if not card_result['success']:
@@ -82,7 +85,7 @@ class IDCardPipeline:
         print("\nDetecting fields (After preprocessing)")
         ocr_result = self.field_detector.detect_and_recognize(
             processed_card,
-            padding = 5
+            padding = 10
         )
         if not ocr_result['success']:
             print("Field detection failed even after preprocessing")
@@ -141,7 +144,7 @@ class IDCardPipeline:
                 'Ensure good lighting',
                 'Keep card flat and fully visible',
                 'Avoid shadows and glare',
-                'Make sure all text is clear'
+                'Make sure background clean'
             ]
         }
 
@@ -235,11 +238,12 @@ def main():
         field_model_path='model/Text_field_detect_best_03_12_25.pt',
         card_conf=0.5,
         field_conf=0.4,
-        min_fields_required=7  
+        min_fields_required=7,
+        custom_ocr_weights="./model/vgg_transformer_ocr_cccd_v3.pth" 
     )
     
     result = pipeline.process_image(
-        image_path='samples/cccd_1.jpeg',
+        image_path='samples/cccd_2.jpeg',
         output_dir='results',
         save_debug=True
     )                                                                 
