@@ -8,17 +8,12 @@ class CardPreprocessor:
     def __init__(self, 
                  resize_ratio=0.5,
                  enable_perspective=True,
-                 enable_enhance=True):
-        """
-        Args:
-            resize_ratio: Ratio resize
-            enable_perspective: 
-            enable_enhance:
-        """
+                 enable_enhance=True,
+                 fixed_output_size=(800,500)):
         self.resize_ratio = resize_ratio
         self.enable_perspective = enable_perspective
         self.enable_enhance = enable_enhance
-
+        self.fixed_output_size = fixed_output_size
     
     def preprocess(self, card_image) -> dict:
         """        
@@ -82,7 +77,7 @@ class CardPreprocessor:
         dilated = cv2.dilate(blurred, rectKernel)
         
         # Edge detection
-        edged = cv2.Canny(dilated, 100, 200, apertureSize=3)
+        edged = cv2.Canny(dilated, 100, 250, apertureSize=3)
         cv2.imwrite('debug_steps/debug_edged.jpg', edged) # debug
         contours, _ = cv2.findContours(edged, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         
@@ -115,29 +110,22 @@ class CardPreprocessor:
         return warped
     
     def _get_card_contour(self, contours):
-        """
-        Tìm contour của thẻ (có 4 góc)
-        Xử lý đặc biệt cho góc bo tròn của CCCD
-        
+        """        
         Returns:
             tuple: (contour, use_bounding_rect)
-            - contour: Contour gốc hoặc bounding rect
-            - use_bounding_rect: True nếu dùng bounding rect thay vì contour gốc
+            - contour: Contour 
+            - use_bounding_rect: True if using bounding rect 
         """
         for c in contours:
-            # Approximate contour
             peri = cv2.arcLength(c, True)
-            # Giảm epsilon để bắt được cả góc bo tròn (0.02 thay vì 0.032)
             approx = cv2.approxPolyDP(c, 0.02 * peri, True)
             
-            # Tìm contour có 4 góc
             if len(approx) == 4:
                 return approx, False
             
-            # Nếu có 5-8 góc (do góc bo tròn), dùng bounding rectangle
+            # Nếu có 5-8 góc dùng bounding rectangle
             if 5 <= len(approx) <= 8:
                 print(f"  Found {len(approx)} corners (rounded), using bounding rectangle")
-                # Get rotated bounding rectangle
                 rect = cv2.minAreaRect(c)
                 box = cv2.boxPoints(rect)
                 box = np.array(box, dtype=np.int32)
@@ -168,47 +156,45 @@ class CardPreprocessor:
         # Scale back
         return rect / resize_ratio
     
-    def _wrap_perspective(self, img, rect):
+    def _wrap_perspective(self, img, rect, fixed_size=(800,500)):
         """
         Apply perspective transform 
         """
-        (tl, tr, br, bl) = rect
-        
-        # new width 
-        widthA = np.sqrt(((br[0] - bl[0]) ** 2) + ((br[1] - bl[1]) ** 2))
-        widthB = np.sqrt(((tr[0] - tl[0]) ** 2) + ((tr[1] - tl[1]) ** 2))
-        maxWidth = max(int(widthA), int(widthB))
-        
-        # new height
-        heightA = np.sqrt(((tr[0] - br[0]) ** 2) + ((tr[1] - br[1]) ** 2))
-        heightB = np.sqrt(((tl[0] - bl[0]) ** 2) + ((tl[1] - bl[1]) ** 2))
-        maxHeight = max(int(heightA), int(heightB))
-        
+        if fixed_size is None:
+            # Auto-calculate
+            (tl, tr, br, bl) = rect
+            widthA = np.sqrt(((br[0] - bl[0]) ** 2) + ((br[1] - bl[1]) ** 2))
+            widthB = np.sqrt(((tr[0] - tl[0]) ** 2) + ((tr[1] - tl[1]) ** 2))
+            width = max(int(widthA), int(widthB))
+            
+            heightA = np.sqrt(((tr[0] - br[0]) ** 2) + ((tr[1] - br[1]) ** 2))
+            heightB = np.sqrt(((tl[0] - bl[0]) ** 2) + ((tl[1] - bl[1]) ** 2))
+            height = max(int(heightA), int(heightB))
+        else:
+            # Fixed size
+            width, height = fixed_size
+
         dst = np.array([
             [0, 0],
-            [maxWidth - 1, 0],
-            [maxWidth - 1, maxHeight - 1],
-            [0, maxHeight - 1]], dtype="float32")
+            [width - 1, 0],
+            [width - 1, height - 1],
+            [0, height - 1]], dtype="float32")
         
-        # transformation matrix
         M = cv2.getPerspectiveTransform(rect, dst)
-        
-        # Warp perspective
-        warped = cv2.warpPerspective(img, M, (maxWidth, maxHeight))
+        warped = cv2.warpPerspective(img, M, (width, height))
         
         return warped
-    
-    
+
     def _enhance_card(self, image):
 
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-        denoised = cv2.fastNlMeansDenoising(gray, None, h=10, templateWindowSize=7, searchWindowSize=21)
+        denoised = cv2.fastNlMeansDenoising(gray, None, h=10, templateWindowSize=7, searchWindowSize=21) # switch gray <=> image ( optional)
         scale = 2.8
         h, w = denoised.shape
         resized = cv2.resize(denoised, (int(w * scale), int(h * scale)), interpolation=cv2.INTER_CUBIC)
 
-        clahe = cv2.createCLAHE(clipLimit=1.5, tileGridSize=(8, 8))  # clipLimit 1.5 thay vì 2.0
+        clahe = cv2.createCLAHE(clipLimit=1.5, tileGridSize=(8, 8)) 
         enhanced = clahe.apply(resized)
 
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2, 2))
@@ -228,7 +214,6 @@ class CardPreprocessor:
         dim = (width, height)
         return cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
         
-    
     def visualize_simple(self, result, original_img, save_prefix='preprocessed') -> None:
         """
         Visualize - save before/after image
