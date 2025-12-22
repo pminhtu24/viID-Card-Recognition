@@ -94,7 +94,6 @@ class CardDetector:
         
         return self.detect(image, padding, padding_percent)
     
-    
     def visualize_simple(self, result, save_prefix='result') -> None:
         """    
         Args:
@@ -141,7 +140,7 @@ def test_card_detector():
         conf_threshold=0.5
     )
     
-    test_image_path = 'samples/cccd_2.jpeg'
+    test_image_path = 'samples/cccd_3.jpeg'
     
     print(f"\ntest with: {test_image_path}")
     
@@ -149,7 +148,7 @@ def test_card_detector():
     # result = detector.detect_from_path(test_image_path, padding=20)
     
     # Use padding in % 
-    result = detector.detect_from_path(test_image_path, padding_percent=0.05)
+    result = detector.detect_from_path(test_image_path, padding_percent=0.1)
     
     if result['success']:
         print("\n DETECTION Sucess!")

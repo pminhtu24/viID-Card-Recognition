@@ -1,6 +1,7 @@
 from ultralytics import YOLO # type: ignore
 from vietocr.tool.config import Cfg
 from vietocr.tool.predictor import Predictor
+import torch
 import cv2
 from PIL import Image
 import traceback
@@ -21,31 +22,44 @@ class FieldDetectorOCR:
         7: 'origin_place',
     }
 
-    def __init__(self, model_path: str, conf_threshold: float=0.4 , ocr_model: str = 'vgg_transformer'):
+    def __init__(self, model_path: str, 
+                 conf_threshold: float=0.4 , 
+                 ocr_model: str = 'vgg_transformer',
+                 custom_ocr_weights = None):
         try:
             self.model = YOLO(model_path)
             self.conf_threshold = conf_threshold
             print(f"Loaded field detection model from {model_path}")
 
-            self._init_vietocr(ocr_model)
+            self._init_vietocr(ocr_model, custom_ocr_weights)
 
         except Exception as e:
             print(f" Error when loading models: {e}")
             raise
 
-    def _init_vietocr(self, model_type='vgg_transformer'):
+    def _init_vietocr(self, model_type='vgg_transformer', custom_weights_path = None):
         try:
             config = Cfg.load_config_from_name(model_type)
             config['cnn']['pretrained'] = False
-            config['device'] = 'cuda:0' # cpu
+            config['device'] = 'cuda:0' if torch.cuda.is_available() else 'cpu'
             config['predictor']['beamsearch'] = False
 
+            if custom_weights_path and os.path.exists(custom_weights_path):
+                print(f"Loading custom VietOCR weights from: {custom_weights_path}")
+                config['weights'] = custom_weights_path
+
             self.ocr_predictor = Predictor(config)
-            print(f"Loaded VietOCR model: {model_type}")
+            if custom_weights_path and os.path.exists(custom_weights_path):
+                print(f"Successfully loaded custom weights")
+            else:
+                print(f"Loaded base VietOCR model: {model_type}")
+                
         except Exception as e:
             print(f"Error initializing VietOCR: {e}")
             raise
-        
+                
+
+
     def detect_and_recognize(self, card_image, padding=2) -> dict:
         """
         Detect fields and perform OCR in one pass
@@ -105,6 +119,8 @@ class FieldDetectorOCR:
 
                 # ---------- OCR ON FIELD -----------
                 ocr_text, ocr_conf = self._recognize_field(field_crop, field_name)
+                if ocr_conf is None:
+                    ocr_conf = 0.0
                 fields.append({
                     'field_name': field_name,
                     'class_id': class_id,
@@ -326,7 +342,7 @@ def test_field_detector_ocr():
     print("="*60)
     
     # Load preprocessed card image
-    card_image_path = 'debug_steps/preprocessed_result_after.jpg'
+    card_image_path = './output_module1/cccd_2_01_card_crop.jpg'
     
     card_image = cv2.imread(card_image_path)
     if card_image is None:
@@ -339,7 +355,7 @@ def test_field_detector_ocr():
     detector = FieldDetectorOCR(
         model_path='model/Text_field_detect_best_03_12_25.pt',
         conf_threshold=0.4,
-        ocr_model='vgg_transformer'
+        custom_ocr_weights="./model/vgg_transformer_ocr_cccd_v3.pth"
     )
     
     # Detect + OCR
