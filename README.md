@@ -6,8 +6,34 @@ The system handles card detection, field localization, image alignment, enhancem
 ## Visualize how it works
 ![alt text](./assets/Alignment_preprocess.png)
 ![alt text](./assets/Field_detector.png)
-
 ---
+
+## Example output
+```json
+{
+  "success": true,
+  "total_fields": 9,
+  "timestamp": "2025-12-08T18:19:05.409878",
+  "fields": {
+    "id" :{
+      "text" : "030204002760",
+      "detection_confidence": 0.8612,
+      "ocr_confidence": 0.9455
+    },
+    "current_place": {
+      "text": "Hải Tân, Thành phố Hải Dương, Hải Dương",
+      "detection_confidence": 0.6977,
+      "ocr_confidence": 0.9158
+    },
+    "dob": {
+      "text": "24/02/2004",
+      "detection_confidence": 0.8086,
+      "ocr_confidence": 0.9355
+    },
+    ...
+  }
+}
+```
 
 ## 🚀 What This Project Does
 - Detects the ID card region from an input image.
@@ -66,32 +92,6 @@ python pipeline_v2.py
 ```
 Output directory will be display in resulst/
 
-## Example output
-```json
-{
-  "success": true,
-  "total_fields": 9,
-  "timestamp": "2025-12-08T18:19:05.409878",
-  "fields": {
-    "id" :{
-      "text" : "030204002760",
-      "detection_confidence": 0.8612,
-      "ocr_confidence": 0.9455
-    },
-    "current_place": {
-      "text": "Hải Tân, Thành phố Hải Dương, Hải Dương",
-      "detection_confidence": 0.6977,
-      "ocr_confidence": 0.9158
-    },
-    "dob": {
-      "text": "24/02/2004",
-      "detection_confidence": 0.8086,
-      "ocr_confidence": 0.9355
-    },
-    ...
-  }
-}
-```
 
 ## Optional
 You can also run each module individually to verify that it works.
