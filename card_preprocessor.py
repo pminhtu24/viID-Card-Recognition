@@ -79,8 +79,10 @@ class CardPreprocessor:
         # Edge detection
         edged = cv2.Canny(dilated, 100, 250, apertureSize=3)
         cv2.imwrite('debug_steps/debug_edged.jpg', edged) # debug
-        contours, _ = cv2.findContours(edged, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        
+        contours, _ = cv2.findContours(edged, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        # Sau khi findContours
+        image_area = resized.shape[0] * resized.shape[1]
+        contours = [c for c in contours if cv2.contourArea(c) > 0.1 * image_area]  # image_area = resized.shape[0] * resized.shape[1]
         if len(contours) == 0:
             return None
         
@@ -118,7 +120,7 @@ class CardPreprocessor:
         """
         for c in contours:
             peri = cv2.arcLength(c, True)
-            approx = cv2.approxPolyDP(c, 0.02 * peri, True)
+            approx = cv2.approxPolyDP(c, 0.01 * peri, True)
             
             if len(approx) == 4:
                 return approx, False
@@ -240,7 +242,7 @@ def test_preprocessor():
     print("TEST MODULE 2: CARD PREPROCESSOR")
     print("="*60)
     
-    card_image_path = 'output_module1/test_result_crop.jpg'
+    card_image_path = '/home/tupham/Documents/Development/ID_CARD_EXTRACTION/output_module1/cccd_1_01_card_crop.jpg'
     
     card_image = cv2.imread(card_image_path)
     if card_image is None:
