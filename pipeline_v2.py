@@ -1,5 +1,5 @@
 from detector.card_detector import CardDetector
-from detector.field_detector_ocr import FieldDetectorOCR
+from detector.field_detector_ocr_v2 import FieldDetectorOCR
 from card_preprocessor import CardPreprocessor
 from pathlib import Path
 from datetime import datetime
@@ -239,7 +239,7 @@ def main():
         card_conf=0.5,
         field_conf=0.4,
         min_fields_required=7,
-        custom_ocr_weights="./model/vgg_transformer_ocr_cccd_v3.pth" 
+        custom_ocr_weights=""  # "./model/vgg_transformer_ocr_cccd_v3.pth" 
     )
     
     result = pipeline.process_image(
