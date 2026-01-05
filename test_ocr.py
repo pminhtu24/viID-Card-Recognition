@@ -35,5 +35,5 @@ def test_folder(folder_path):
 
 if __name__ == "__main__":
     # Input is cropped field
-    test_single_image("/home/tupham/Documents/Development/ID_CARD_EXTRACTION/results/debug/cccd_3_field_crops/07_origin_place.jpg")
+    test_single_image("./results/debug/cccd_2_field_crops/08_origin_place.jpg")
     
