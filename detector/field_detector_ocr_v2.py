@@ -47,7 +47,7 @@ class FieldDetectorOCR:
                 config['weights'] = custom_weights_path
             else:
                 print(f"No custom weights provided, using pretrained: {model_type}")
-            
+                pass
             config['device'] = 'cuda:0' if torch.cuda.is_available() else 'cpu'
             config['predictor']['beamsearch'] = False
             
